@@ -21,10 +21,10 @@ export const store = createStore(reducer)
 
 // Multicall hooks must be called inside the Multicall Updater
 export function MulticallUpdater() {
-  const latestBlockNumber = useLatestBlockNumber()
+  const latestBlockTimestamp = useLatestBlockTimestamp()
   const contract = useMulticallContract()
 
-  return <multicall.Updater latestBlockNumber={latestBlockNumber} contract={contract} />
+  return <multicall.Updater latestBlockTimestamp={latestBlockTimestamp} contract={contract} />
 }
 ```
 
@@ -38,7 +38,7 @@ const ETH_TOKEN_ADDRESS = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b156
 const DAI_TOKEN_ADDRESS = '0x03e85bfbb8e2a42b7bead9e88e9a1b19dbccf661471061807292120462396ec9'
 
 const results = multicall.hooks.useMultipleContractSingleData(
-  latestBlockNumber,
+  latestBlockTimestamp,
   [ETH_TOKEN_ADDRESS, DAI_TOKEN_ADDRESS],
   ERC20ABI as Abi,
   'balanceOf',

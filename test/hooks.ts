@@ -1,6 +1,6 @@
 import JSBI from 'jsbi'
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { Contract, Abi, GetBlockResponse, Provider } from 'starknet'
+import { Contract, Abi, GetBlockResponse, RpcProvider, constants } from 'starknet'
 
 import ERC20ABI from './ERC20.json'
 import MulticallABI from './multicall.json'
@@ -17,24 +17,22 @@ interface Uint256 {
   high?: string
 }
 
-const provider = new Provider({
-  sequencer: { baseUrl: 'https://alpha4.starknet.io', feederGatewayUrl: 'feeder_gateway' }
-})
+const provider = new RpcProvider({ nodeUrl: constants.NetworkName.SN_GOERLI });
 
 export function useLatestBlock(): number | undefined {
-  const [blockNumber, setBlockNumber] = useState<number | undefined>()
+  const [blockTimestamp, setBlockTimestamp] = useState<number | undefined>()
 
   const fetchBlock = useCallback(() => {
     if (!provider) return
     provider
       .getBlock('latest')
       .then((block: GetBlockResponse) => {
-        setBlockNumber(block.block_number)
+        setBlockTimestamp(block.timestamp)
       })
       .catch(() => {
         console.error('failed fetching block')
       })
-  }, [provider, setBlockNumber])
+  }, [provider, setBlockTimestamp])
 
   useEffect(() => {
     fetchBlock() // first fetch
@@ -48,12 +46,12 @@ export function useLatestBlock(): number | undefined {
     }
   }, [fetchBlock])
 
-  return blockNumber
+  return blockTimestamp
 }
 
-export function useEthBalance(blockNumber: number | undefined, address: string) {
+export function useEthBalance(blockTimestamp: number | undefined, address: string) {
   const results = useMultipleContractSingleData(
-    blockNumber,
+    blockTimestamp,
     [ETH_ADDRESS],
     ERC20ABI as Abi,
     'balanceOf',

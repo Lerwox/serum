@@ -15,9 +15,9 @@ describe('Use multicall in test application', () => {
   it('Performs a single contract multicall query', async () => {
     render(<App />)
     // Check that block number is correctly retrieved from block
-    const blockNumber = await waitFor(() => screen.getByTestId('blockNumber'), { timeout: 20_000 /* 20 seconds */ })
-    expect(blockNumber && blockNumber?.textContent).toBeTruthy()
-    console.log('blockNumber', blockNumber.textContent!)
+    const blockTimestamp = await waitFor(() => screen.getByTestId('blockTimestamp'), { timeout: 20_000 /* 20 seconds */ })
+    expect(blockTimestamp && blockTimestamp?.textContent).toBeTruthy()
+    console.log('blockTimestamp', blockTimestamp.textContent!)
 
     const balance = await waitFor(() => screen.getByTestId('ETHbalance'), { timeout: 20_000 /* 20 seconds */ })
     expect(balance && balance?.textContent).toBeTruthy()

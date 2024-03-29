@@ -1,4 +1,4 @@
-import { AbiEntry, Calldata, num } from 'starknet'
+import { AbiEntry, Calldata, MultiType } from 'starknet'
 
 export interface CallResultData {
   [key: string]: string | string[] | number | CallResultData
@@ -12,8 +12,8 @@ export interface MulticallState {
   callResults: {
     [callKey: string]: {
       data?: CallResultData | null
-      blockNumber?: number
-      fetchingBlockNumber?: number
+      blockTimestamp?: number
+      fetchingBlockTimestamp?: number
     }
   }
 }
@@ -37,7 +37,7 @@ export interface Call {
 export interface CallResult {
   data?: CallResultData
   valid: boolean
-  blockNumber?: number
+  blockTimestamp?: number
 }
 
 export interface CallState {
@@ -55,20 +55,20 @@ export interface MulticallListenerPayload {
 }
 
 export interface MulticallFetchingPayload {
-  fetchingBlockNumber: number
+  fetchingBlockTimestamp: number
   calls: Call[]
 }
 
 export interface MulticallResultsPayload {
-  blockNumber: number
+  blockTimestamp: number
   resultsData: { [key: string]: CallResultData }
 }
 
-export type NullableBigNumberish = num.BigNumberish | undefined | null
+export type NullableMultiType = MultiType | undefined | null
 
 export type OptionalRawArgs = {
-  [inputName: string]: NullableBigNumberish | NullableBigNumberish[] | {
+  [inputName: string]: NullableMultiType | NullableMultiType[] | {
       type: 'struct'
-      [k: string]: NullableBigNumberish
+      [k: string]: NullableMultiType
   };
-} | NullableBigNumberish[]
+} | NullableMultiType[]

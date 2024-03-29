@@ -36,44 +36,44 @@ export function createMulticallSlice(reducerPath: string) {
       },
 
       fetchMulticallResults: (state, action: PayloadAction<MulticallFetchingPayload>) => {
-        const { fetchingBlockNumber, calls } = action.payload
+        const { fetchingBlockTimestamp, calls } = action.payload
         const results = state.callResults
 
         calls.forEach((call) => {
           const callKey = toCallKey(call)
-          results[callKey] = results[callKey] ?? { fetchingBlockNumber }
-          if ((results[callKey]?.fetchingBlockNumber ?? 0) >= fetchingBlockNumber) return
-          results[callKey].fetchingBlockNumber = fetchingBlockNumber
+          results[callKey] = results[callKey] ?? { fetchingBlockTimestamp }
+          if ((results[callKey]?.fetchingBlockTimestamp ?? 0) >= fetchingBlockTimestamp) return
+          results[callKey].fetchingBlockTimestamp = fetchingBlockTimestamp
         })
       },
 
       errorFetchingMulticallResults: (state, action: PayloadAction<MulticallFetchingPayload>) => {
-        const { fetchingBlockNumber, calls } = action.payload
+        const { fetchingBlockTimestamp, calls } = action.payload
         const results = state.callResults
 
         calls.forEach((call) => {
           const callKey = toCallKey(call)
-          if (typeof results[callKey]?.fetchingBlockNumber !== 'number') return
-          if ((results[callKey]?.fetchingBlockNumber ?? 0) > fetchingBlockNumber) return
+          if (typeof results[callKey]?.fetchingBlockTimestamp !== 'number') return
+          if ((results[callKey]?.fetchingBlockTimestamp ?? 0) > fetchingBlockTimestamp) return
 
           results[callKey] = {
             data: null,
-            blockNumber: fetchingBlockNumber,
+            blockTimestamp: fetchingBlockTimestamp,
           }
         })
       },
 
       updateMulticallResults: (state, action: PayloadAction<MulticallResultsPayload>) => {
-        const { blockNumber, resultsData } = action.payload
+        const { blockTimestamp, resultsData } = action.payload
         const results = state.callResults
 
         Object.keys(resultsData).forEach((callKey: string) => {
           results[callKey] = results[callKey] ?? {}
-          if ((results[callKey].blockNumber ?? 0) >= blockNumber) return
+          if ((results[callKey].blockTimestamp ?? 0) >= blockTimestamp) return
 
           results[callKey] = {
             data: resultsData[callKey] ?? null,
-            blockNumber,
+            blockTimestamp,
           }
         })
       },

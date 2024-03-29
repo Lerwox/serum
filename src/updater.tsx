@@ -114,16 +114,16 @@ function activeListeningKeys(callListeners: MulticallState['callListeners']): st
 function outdatedListeningKeys(
   callResults: MulticallState['callResults'],
   listeningKeys: string[],
-  latestBlockNumber?: number
+  latestBlockTimestamp?: number
 ): string[] {
-  if (latestBlockNumber === undefined) return []
+  if (latestBlockTimestamp === undefined) return []
 
   return listeningKeys.filter((callKey: string) => {
     const result = callResults[callKey]
     // no data => outdated
     if (!result?.data) return true
 
-    if ((result.fetchingBlockNumber ?? 0) >= latestBlockNumber || (result.blockNumber ?? 0) >= latestBlockNumber)
+    if ((result.fetchingBlockTimestamp ?? 0) >= latestBlockTimestamp || (result.blockTimestamp ?? 0) >= latestBlockTimestamp)
       return false
 
     return true
@@ -135,7 +135,7 @@ function outdatedListeningKeys(
 interface FetchChunkContext {
   actions: MulticallActions
   dispatch: Dispatch<any>
-  latestBlockNumber: number
+  latestBlockTimestamp: number
 }
 
 function onFetchChunkSuccess(fetchChunkContext: FetchChunkContext, chunk: Call[], result: ContractCallResult) {
@@ -143,7 +143,7 @@ function onFetchChunkSuccess(fetchChunkContext: FetchChunkContext, chunk: Call[]
     fetchChunkContext.dispatch(
       fetchChunkContext.actions.errorFetchingMulticallResults({
         calls: chunk,
-        fetchingBlockNumber: fetchChunkContext.latestBlockNumber,
+        fetchingBlockTimestamp: fetchChunkContext.latestBlockTimestamp,
       })
     )
     return
@@ -165,7 +165,7 @@ function onFetchChunkSuccess(fetchChunkContext: FetchChunkContext, chunk: Call[]
     fetchChunkContext.dispatch(
       fetchChunkContext.actions.updateMulticallResults({
         resultsData: results,
-        blockNumber: fetchChunkContext.latestBlockNumber
+        blockTimestamp: fetchChunkContext.latestBlockTimestamp
       })
     )
   }
@@ -176,7 +176,7 @@ function onFetchChunkFailure(fetchChunkContext: FetchChunkContext, chunk: Call[]
 
   fetchChunkContext.dispatch(
     fetchChunkContext.actions.errorFetchingMulticallResults({
-      fetchingBlockNumber: fetchChunkContext.latestBlockNumber,
+      fetchingBlockTimestamp: fetchChunkContext.latestBlockTimestamp,
       calls: chunk
     })
   )
@@ -186,43 +186,43 @@ function onFetchChunkFailure(fetchChunkContext: FetchChunkContext, chunk: Call[]
 
 export interface UpdaterProps {
   context: MulticallContext
-  latestBlockNumber: number
+  latestBlockTimestamp: number
   contract: Contract
 }
 
-function Updater({ latestBlockNumber, contract, context }: UpdaterProps): null {
+function Updater({ latestBlockTimestamp, contract, context }: UpdaterProps): null {
   const { actions, reducerPath } = context
 
   const dispatch = useDispatch()
   const state = useSelector((state: WithMulticallState) => state[reducerPath])
   // wait for listeners to settle before triggering updates
   const debouncedListeners = useDebounce(state.callListeners, 100)
-  const cancellations = useRef<{ blockNumber: number; cancellations: Array<() => void> }>()
+  const cancellations = useRef<{ blockTimestamp: number; cancellations: Array<() => void> }>()
 
   const listeningKeys: string[] = useMemo(() => activeListeningKeys(debouncedListeners), [debouncedListeners])
 
   const outdatedCallKeys: string[] = useMemo(
-    () => outdatedListeningKeys(state.callResults, listeningKeys, latestBlockNumber),
-    [state.callResults, listeningKeys, latestBlockNumber]
+    () => outdatedListeningKeys(state.callResults, listeningKeys, latestBlockTimestamp),
+    [state.callResults, listeningKeys, latestBlockTimestamp]
   )
 
   const serializedOutdatedCallKeys: string = useMemo(() => JSON.stringify(outdatedCallKeys.sort()), [outdatedCallKeys])
 
   useEffect(() => {
-    if (!contract || !latestBlockNumber) return
+    if (!contract || !latestBlockTimestamp) return
     const outdatedCallKeys = JSON.parse(serializedOutdatedCallKeys)
     const calls = outdatedCallKeys.map(parseCallKey)
 
     const chunks = chunkCalls(calls)
 
-    if (cancellations.current && cancellations.current.blockNumber !== latestBlockNumber) {
+    if (cancellations.current && cancellations.current.blockTimestamp !== latestBlockTimestamp) {
       cancellations.current.cancellations.forEach((cancel) => cancel())
     }
 
-    dispatch(actions.fetchMulticallResults({ fetchingBlockNumber: latestBlockNumber, calls }))
+    dispatch(actions.fetchMulticallResults({ fetchingBlockTimestamp: latestBlockTimestamp, calls }))
 
     cancellations.current = {
-      blockNumber: latestBlockNumber,
+      blockTimestamp: latestBlockTimestamp,
       cancellations: chunks.map((chunk: Call[]) => {
         let cancel: () => void = () => {}
 
@@ -240,7 +240,7 @@ function Updater({ latestBlockNumber, contract, context }: UpdaterProps): null {
         const fetchChunkContext = {
           actions,
           dispatch,
-          latestBlockNumber,
+          latestBlockTimestamp,
         }
 
         promise
@@ -250,7 +250,7 @@ function Updater({ latestBlockNumber, contract, context }: UpdaterProps): null {
         return cancel
       }),
     }
-  }, [latestBlockNumber, dispatch, serializedOutdatedCallKeys])
+  }, [latestBlockTimestamp, dispatch, serializedOutdatedCallKeys])
 
   return null
 }

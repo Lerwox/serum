@@ -9,14 +9,14 @@ import { INVALID_CALL_STATE, LOADING_CALL_STATE } from './constants'
 import { areCallInputsValid } from './validation'
 import type { MulticallContext } from './context'
 
-function toCallState(callResult: CallResult, latestBlockNumber?: number): CallState {
+function toCallState(callResult: CallResult, latestBlockTimestamp?: number): CallState {
   if (!callResult) return INVALID_CALL_STATE
-  const { valid, data, blockNumber } = callResult
+  const { valid, data, blockTimestamp } = callResult
   if (!valid) return INVALID_CALL_STATE
-  if (valid && !blockNumber) return LOADING_CALL_STATE
-  if (!latestBlockNumber) return LOADING_CALL_STATE
+  if (valid && !blockTimestamp) return LOADING_CALL_STATE
+  if (!latestBlockTimestamp) return LOADING_CALL_STATE
 
-  const syncing = (blockNumber ?? 0) < latestBlockNumber
+  const syncing = (blockTimestamp ?? 0) < latestBlockTimestamp
   if (data && Object.keys(data).length)
     return { valid: true, loading: false, syncing, result: data, error: false }
 
@@ -61,7 +61,7 @@ function useCallsDataSubscription(context: MulticallContext, calls: Array<Call |
         let data
         if (result?.data && Object.keys(result.data).length) data = result.data
 
-        return { valid: true, data, blockNumber: result?.blockNumber }
+        return { valid: true, data, blockTimestamp: result?.blockTimestamp }
       }),
     [calls, callResults]
   )
@@ -73,7 +73,7 @@ function useCallsDataSubscription(context: MulticallContext, calls: Array<Call |
 
 export function useMultipleContractSingleData(
   context: MulticallContext,
-  latestBlockNumber: number | undefined,
+  latestBlockTimestamp: number | undefined,
   addresses: Array<string | undefined>,
   abi: Abi,
   methodName: string,
@@ -103,7 +103,7 @@ export function useMultipleContractSingleData(
   const callResults = useCallsDataSubscription(context, calls)
 
   return useMemo(
-    () => callResults.map((result) => toCallState(result, latestBlockNumber)),
-    [latestBlockNumber, callResults]
+    () => callResults.map((result) => toCallState(result, latestBlockTimestamp)),
+    [latestBlockTimestamp, callResults]
   )
 }

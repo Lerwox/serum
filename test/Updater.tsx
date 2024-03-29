@@ -3,11 +3,11 @@ import { useContract } from './hooks'
 import { multicall } from './multicall'
 
 interface Props {
-  blockNumber: number | undefined
+  blockTimestamp: number | undefined
 }
 
-export function Updater({ blockNumber }: Props) {
+export function Updater({ blockTimestamp }: Props) {
   const contract = useContract()
   if (!contract) return null
-  return <multicall.Updater latestBlockNumber={blockNumber ?? 0} contract={contract} />
+  return <multicall.Updater latestBlockTimestamp={blockTimestamp ?? 0} contract={contract} />
 }
